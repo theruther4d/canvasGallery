@@ -1,0 +1,21 @@
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    // min-height: 100vh;
+    overflow-x: hidden;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-family: "myriad-pro", sans-serif;
+    font-family: system, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 62.5%;
+    font-weight: 400;
+}

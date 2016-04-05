@@ -1,0 +1,18 @@
+html {
+    background: black;
+}
+
+.gallery {
+    max-width: 960px;
+    margin: 0 auto;
+    // border: 2px solid red;
+
+    &__item {
+        display: none;
+    }
+
+    &__canvas {
+        // max-width: 100%;
+        // height: auto;
+    }
+}
