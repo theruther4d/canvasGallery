@@ -1,4 +1,6 @@
 import Hammer from 'hammerjs';
+import Timer from './Timer';
+import Interpolation from './Interpolation';
 
 class Gallery {
     constructor( el ) {
@@ -11,11 +13,9 @@ class Gallery {
         this.currentSlide = 0;
         this._lastOffset = 0;
         this._ticking = false;
-        console.log( `ww: ${this._ww}` );
-        console.log( `window.innerWidth: ${window.innerWidth}` );
+        this._timer = new Timer();
 
         this._getSlides( el, ( slides ) => {
-            console.log( 'got slides' );
             this._slides = slides;
             this._canvas = this._createCanvas( Math.min( this._ww, this._maxWidth ), this._maxHeight );
             this._context = this._canvas.getContext( '2d' );
@@ -53,8 +53,10 @@ class Gallery {
             const boundOnPan = this._onPan.bind( this );
             const timer = setInterval( () => {
                 if( start <= end ) {
+
                     console.log( 'clearing!!!' );
                     clearInterval( timer );
+                    return true;
                 }
                 boundOnPan( start );
 
@@ -67,13 +69,28 @@ class Gallery {
         this._hammer = new Hammer( canvas );
         this._hammer.on( 'pan', ( e ) => {
             if( e.additionalEvent === 'panleft') {
-                this._onPan( e.deltaX );
+                this._lastOffset = e.deltaX;
+                this._timer.start();
+                this._timer.on( 'draw', this._panUpdate.bind( this ) );
+                // this._onPan( e.deltaX );
             }
         });
 
         this._hammer.on( 'panend', ( e ) => {
             if( Math.abs( e.deltaX ) > this._canvasWidth / 2 ) {
-                this._transition( e.deltaX, ( this._canvasWidth + this._margin ) * -1, 250, this._onPan.bind( this ) );
+                const transition = new Interpolation( e.deltaX, ( this._canvasWidth + this._margin ) * -1, 500, this._timer.time() );
+
+                this._timer.on( 'draw', ( timestamp ) => {
+                    this._lastOffset = transition.play( timestamp );
+                    // console.log( 'transition: ', transition.play( timestamp ) );
+                });
+
+                transition.on( 'complete', () => {
+                    alert( 'transition complete!' );
+                    this._timer.stop();
+                });
+
+                // this._transition( e.deltaX, ( this._canvasWidth + this._margin ) * -1, 250, this._onPan.bind( this ) );
                 // this.currentSlide++;
             } else {
                 // transition all the way to the right
@@ -87,14 +104,14 @@ class Gallery {
         this._requestTick();
     }
 
-    _requestTick() {
-        if( !this.ticking ) {
-            // console.log( '- - - requesting animation frame - - -' );
-            requestAnimationFrame( this._panUpdate.bind( this ) );
-        }
-
-        this._ticking = true;
-    }
+    // _requestTick() {
+    //     if( !this.ticking ) {
+    //         // console.log( '- - - requesting animation frame - - -' );
+    //         requestAnimationFrame( this._panUpdate.bind( this ) );
+    //     }
+    //
+    //     this._ticking = true;
+    // }
 
 
     _scaleImageDimensions( imgWidth, imgHeight, width ) {
@@ -143,8 +160,9 @@ class Gallery {
         return Promise.all( promises ).then( cb );
     }
 
-    _panUpdate( ) {
-        this._ticking = false;
+    _panUpdate() {
+        console.log( 'panUpdating: ', this._lastOffset );
+        // this._ticking = false;
         // console.log( `update: ${this._lastOffset}` );
 
         const multiplier = this._amt / ( this._canvasWidth /*/ 2*/ );
@@ -166,7 +184,6 @@ class Gallery {
         const context = canvas.getContext( '2d' );
         const slide = this._slides[this.currentSlide];
         const dimensions = this._scaleImageDimensions( slide.width, slide.height, width );
-
         canvas.width = width;
         canvas.height = height;
         context.drawImage( slide.img, this._amt, 0, slide.img.width - this._amt, slide.img.height, 0, 0, dimensions.width, dimensions.height );

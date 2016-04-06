@@ -8,7 +8,13 @@ class Emitter {
     }
 
     on( eventName, callback ) {
-        this._events[eventName] = [ ...this.events[eventName], callback ];
+        this._events[eventName] = this._events[eventName] || [];
+
+        this._events[eventName].push( callback );
+
+        // const returnValue = events[eventName](callback);
+
+        // foreach callback in update, stash the return value of the callback, use to expose to draw
     }
 
     off( eventName, callback ) {
@@ -25,7 +31,7 @@ class Emitter {
 
     trigger( eventName, data ) {
         if( this._events.hasOwnProperty( eventName ) ) {
-            this.events[eventName].forEach( ( callback ) => {
+            this._events[eventName].forEach( ( callback ) => {
                 if( data ) {
                     callback( data );
                 } else {
