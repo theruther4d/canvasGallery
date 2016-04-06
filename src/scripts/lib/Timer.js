@@ -30,24 +30,19 @@ class Timer extends Emitter {
         this._animationFrame = window.requestAnimationFrame( this._draw.bind( this ) );
     }
 
+    _clear() {
+        this._events = {};
+    }
+
     stop() {
         window.cancelAnimationFrame( this._animationFrame );
         this._lastTime = null;
         this._animationFrame = null;
         this._ticking = false;
+        this._clear();
 
         return false;
     }
 };
 
 export default Timer;
-
-
-// this._clock.on( 'update', ( e.deltaX ) => {
-//  this._lastOffset = e.deltaX;
-// })
-//
-// this._clock.on( 'draw', ( e.deltaX ) => {
-//  // do stuff with e.deltaX
-// })
-//

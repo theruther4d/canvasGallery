@@ -6,17 +6,18 @@ class Gallery {
     constructor( el ) {
         this._el = el;
         this._margin = 40;
-        this._amt = 30;
+        this._amt = 40;
         this._maxWidth = 960;
         this._maxHeight = 0;
-        this._ww = window.outerWidth || window.innerWidth;   // @TODO: add window resize listener
+        this._ww = window.outerWidth || window.innerWidth;
         this.currentSlide = 0;
         this._lastOffset = 0;
-        this._ticking = false;
         this._timer = new Timer();
+        this._numSlides = 0;
 
         this._getSlides( el, ( slides ) => {
             this._slides = slides;
+            this._numSlides = slides.length;
             this._canvas = this._createCanvas( Math.min( this._ww, this._maxWidth ), this._maxHeight );
             this._context = this._canvas.getContext( '2d' );
             this._addTouchListener( this._canvas );
@@ -24,95 +25,87 @@ class Gallery {
         });
     }
 
-    _transition( start, end, duration, callback ) {
-        console.log( `from: ${start} to ${end}` );
-
-        // forwards
-        if( start <= end ) {
-            // const delay = Math.abs( end - start ) / duration;
-            // let timer;
-            // console.log( '= = = = = = = = = = = =' );
-            // console.log( `delay: ${delay}` );
-            // console.log( '= = = = = = = = = = = =' );
-            //
-            // // Maybe use setInterval instead
-            // // of timeout + loop ???
-            // while( start < end ) {
-            //     let interpolated = start;
-            //     let timer = setTimeout( () => {
-            //         callback( interpolated )
-            //     }, delay );
-            //
-            //     start++;
-            // }
-        }
-
-        // backwards
-        else {
-            const delay = duration / Math.abs( start - end );
-            const boundOnPan = this._onPan.bind( this );
-            const timer = setInterval( () => {
-                if( start <= end ) {
-
-                    console.log( 'clearing!!!' );
-                    clearInterval( timer );
-                    return true;
-                }
-                boundOnPan( start );
-
-                start--;
-            }, delay );
-        }
-    }
-
     _addTouchListener( canvas ) {
         this._hammer = new Hammer( canvas );
         this._hammer.on( 'pan', ( e ) => {
-            if( e.additionalEvent === 'panleft') {
                 this._lastOffset = e.deltaX;
                 this._timer.start();
                 this._timer.on( 'draw', this._panUpdate.bind( this ) );
-                // this._onPan( e.deltaX );
-            }
         });
 
-        this._hammer.on( 'panend', ( e ) => {
-            if( Math.abs( e.deltaX ) > this._canvasWidth / 2 ) {
-                const transition = new Interpolation( e.deltaX, ( this._canvasWidth + this._margin ) * -1, 500, this._timer.time() );
-
-                this._timer.on( 'draw', ( timestamp ) => {
-                    this._lastOffset = transition.play( timestamp );
-                    // console.log( 'transition: ', transition.play( timestamp ) );
-                });
-
-                transition.on( 'complete', () => {
-                    alert( 'transition complete!' );
-                    this._timer.stop();
-                });
-
-                // this._transition( e.deltaX, ( this._canvasWidth + this._margin ) * -1, 250, this._onPan.bind( this ) );
-                // this.currentSlide++;
-            } else {
-                // transition all the way to the right
-            }
-        });
+        this._hammer.on( 'panend', this._setDirection.bind( this ) );
     }
 
-    _onPan( offset ) {
-        // console.log( `onPan: ${offset}` );
-        this._lastOffset = offset;
-        this._requestTick();
+    _isPrevTerminal() {
+        return this.currentSlide === 0;
     }
 
-    // _requestTick() {
-    //     if( !this.ticking ) {
-    //         // console.log( '- - - requesting animation frame - - -' );
-    //         requestAnimationFrame( this._panUpdate.bind( this ) );
-    //     }
-    //
-    //     this._ticking = true;
-    // }
+    _isNextTerminal() {
+        return this.currentSlide === this._numSlides - 1;
+    }
 
+    _setDirection( e ) {
+        if( e.offsetDirection === 2 ) {
+            this._nextSlide( e );
+        } else if ( e.offsetDirection === 4 ) {
+            this._previousSlide( e );
+        }
+    }
+
+    _nextSlide( e ) {
+        if( Math.abs( e.deltaX ) > this._canvasWidth / 6  && !this._isNextTerminal() ) {
+            const duration = 250;
+            const transition = new Interpolation( e.deltaX, ( this._canvasWidth + this._margin ) * -1, duration, this._timer.time() );
+
+            this._timer.on( 'draw', ( timestamp ) => {
+                this._lastOffset = transition.play( timestamp );
+            });
+
+            transition.on( 'complete', () => {
+                this._timer.stop();
+                this.currentSlide++;
+            });
+        } else {
+            const duration = 250;
+            const transition = new Interpolation( e.deltaX, 0, duration, this._timer.time() );
+
+            this._timer.on( 'draw', ( timestamp ) => {
+                this._lastOffset = transition.play( timestamp );
+            });
+
+            transition.on( 'complete', () => {
+                this._timer.stop();
+            });
+        }
+    }
+
+
+    _previousSlide( e ) {
+        if( Math.abs( e.deltaX ) > this._canvasWidth / 6  && !this._isPrevTerminal() ) {
+            const duration = 250;
+            const transition = new Interpolation( e.deltaX, this._canvasWidth + this._margin, duration, this._timer.time() );
+
+            this._timer.on( 'draw', ( timestamp ) => {
+                this._lastOffset = transition.play( timestamp );
+            });
+
+            transition.on( 'complete', () => {
+                this._timer.stop();
+                this.currentSlide--;
+            });
+        } else {
+            const duration = 250;
+            const transition = new Interpolation( e.deltaX, 0, duration, this._timer.time() );
+
+            this._timer.on( 'draw', ( timestamp ) => {
+                this._lastOffset = transition.play( timestamp );
+            });
+
+            transition.on( 'complete', () => {
+                this._timer.stop();
+            });
+        }
+    }
 
     _scaleImageDimensions( imgWidth, imgHeight, width ) {
         const multiplier = Math.min( width, this._maxWidth );
@@ -133,7 +126,6 @@ class Gallery {
 
             const promise = new Promise( ( resolve, reject ) => {
                 img.onload = () => {
-                    console.log( 'image loaded' );
                     const width = img.width;
                     const height = img.height;
                     const dimensions = this._scaleImageDimensions( width, height, this._ww );
@@ -148,7 +140,6 @@ class Gallery {
                 };
 
                 img.onerror = () => {
-                    console.log( 'rejected!' );
                     reject( 'image could not load' );
                 }
             });
@@ -161,22 +152,30 @@ class Gallery {
     }
 
     _panUpdate() {
-        console.log( 'panUpdating: ', this._lastOffset );
-        // this._ticking = false;
-        // console.log( `update: ${this._lastOffset}` );
-
-        const multiplier = this._amt / ( this._canvasWidth /*/ 2*/ );
+        // console.log( this._lastOffset );
+        const multiplier = this._amt / ( this._canvasWidth );
+        const previous = this._slides[this.currentSlide - 1];
         const current = this._slides[this.currentSlide];
         const next = this._slides[this.currentSlide + 1];
 
         this._context.clearRect( 0, 0, this._canvasWidth, this._canvasHeight );
         const imgOffset = Math.min( Math.abs( this._lastOffset * multiplier ), this._amt );
 
-        // this._context.drawImage( current.img, imgOffset, 0, current.img.width - this._amt, current.img.height, this._lastOffset, 0, this._canvasWidth, this._canvasHeight );
+
+        // Draw Previous:
+        if( previous ) {
+            const x = ( previous.img.width - this._lastOffset + ( this._amt * 2 ) + ( this._margin * 2 ) ) * -1;
+
+            this._context.drawImage( previous.img, imgOffset, 0, previous.img.width - this._amt, previous.img.height, x, 0, this._canvasWidth, this._canvasHeight );
+        }
+
+        // Draw Current:
         this._context.drawImage( current.img, this._amt - imgOffset, 0, current.img.width - this._amt, current.img.height, this._lastOffset, 0, this._canvasWidth, this._canvasHeight );
 
-        // this._context.drawImage( next.img, 0, 0, next.img.width, next.img.height, this._canvasWidth + ( this._lastOffset + this._margin ), 0, this._canvasWidth, this._canvasHeight );
-        this._context.drawImage( next.img, imgOffset, 0, next.img.width - this._amt, next.img.height, this._canvasWidth + ( this._lastOffset + this._margin ), 0, this._canvasWidth, this._canvasHeight );
+        // Draw Next:
+        if( next ) {
+            this._context.drawImage( next.img, imgOffset, 0, next.img.width - this._amt, next.img.height, this._canvasWidth + ( this._lastOffset + this._margin ), 0, this._canvasWidth, this._canvasHeight );
+        }
     }
 
     _createCanvas( width, height ) {
@@ -187,7 +186,6 @@ class Gallery {
         canvas.width = width;
         canvas.height = height;
         context.drawImage( slide.img, this._amt, 0, slide.img.width - this._amt, slide.img.height, 0, 0, dimensions.width, dimensions.height );
-        // context.drawImage( slide.img, 0, 0, slide.img.width - this._amt, slide.img.height, 0, 0, dimensions.width, dimensions.height );
         canvas.classList.add( 'gallery__canvas' );
         this._canvasWidth = width;
         this._canvasHeight = height;
