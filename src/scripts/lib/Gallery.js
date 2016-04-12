@@ -22,6 +22,7 @@ class Gallery {
         this._transitionStart = false;
         this._createCanvasLayers( el );
         this._drag = 0;
+        this._direction = false;
 
         this._getSlides( el, ( slides ) => {
            this._slides = slides;
@@ -101,16 +102,28 @@ class Gallery {
     _bindTouchEvents() {
         this._hammer = new Hammer( this._current );
         this._hammer.on( 'pan', ( e ) => {
+            this._direction = e.direction === 4 || e.direction === 2 ? e.direction : this._direction;
             this._drag = Math.round( e.deltaX );
-            this.pos = this.currentPosition + ( this._drag * -1 );
 
-            if( e.isFinal && Math.abs( this._drag ) >= this._width / 3 ) {
+            let tentativePos = this.currentPosition + ( this._drag * -1 );
+            if( tentativePos <= 0 || tentativePos >= this._fullWidth ) {
+                tentativePos = this.currentPosition + ( this._drag * -0.5 );
+            }
+
+            this.pos = tentativePos;
+
+            if( e.isFinal && Math.abs( this._drag ) >= this._width / 3 && !this._isTerminal() ) {
                 const which = this._drag < 0 ? this.currentSlide + 1 : this.currentSlide - 1;
                 this._goToSlide( which );
             } else if( e.isFinal ) {
                 this._transition( this.pos, this.currentPosition );
             }
         });
+    }
+
+    _isTerminal() {
+        console.log( `direction: ${this._direction}` );
+        return ( this.currentSlide === 0 && this._direction === 4 ) || ( this.currentSlide === this._numSlides - 1 && this._direction === 2 );
     }
 
     _transition( from, to, duration = 250 ) {
