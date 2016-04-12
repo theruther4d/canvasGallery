@@ -1,15 +1,15 @@
+import Emitter from './Emitter';
 import Hammer from 'hammerjs';
 import Item from './Item';
 
 /*
- * Add tension to end slides.
  * Variable transition duration based on how far we are from the destination.
  * Resize handler
  * * destroy() method or update() for Item
  */
-
-class Gallery {
+class Gallery extends Emitter {
     constructor( el ) {
+        super();
         this._width = 400;
         this._height = 400;
         this._margin = 40;
@@ -34,6 +34,7 @@ class Gallery {
            this._ready = true;
            this._draw();
            this._slides[this.currentSlide]._onDraw( this.pos );
+           this.trigger( 'ready' );
        });
     }
 
@@ -122,7 +123,6 @@ class Gallery {
     }
 
     _isTerminal() {
-        console.log( `direction: ${this._direction}` );
         return ( this.currentSlide === 0 && this._direction === 4 ) || ( this.currentSlide === this._numSlides - 1 && this._direction === 2 );
     }
 
@@ -146,6 +146,7 @@ class Gallery {
 
         this.currentSlide = slideNo;
         this._setCurrentPosition();
+        this.trigger( 'update' );
     }
 
     _getSlidesInView( pos ) {
