@@ -1,142 +1,53 @@
 import Hammer from 'hammerjs';
-import Timer from './Timer';
-import Interpolation from './Interpolation';
+import Item from './Item';
+
+/*
+ * Add tension to end slides.
+ * Variable transition duration based on how far we are from the destination.
+ * Resize handler
+ * * destroy() method or update() for Item
+ */
 
 class Gallery {
     constructor( el ) {
-        this._el = el;
+        this._width = 400;
+        this._height = 400;
         this._margin = 40;
-        this._amt = 40;
-        this._maxWidth = 960;
-        this._maxHeight = 0;
-        this._ww = window.outerWidth || window.innerWidth;
         this.currentSlide = 0;
-        this._lastOffset = 0;
-        this._timer = new Timer();
-        this._numSlides = 0;
+        this._lastPos = 0;
+        this.pos = 0;
+        this._arrowMultiplier = 1;
+        this._ready = false;
+        this._transitioning = false;
+        this._transitionStart = false;
+        this._createCanvasLayers( el );
+        this._drag = 0;
 
         this._getSlides( el, ( slides ) => {
-            this._slides = slides;
-            this._numSlides = slides.length;
-            this._canvas = this._createCanvas( Math.min( this._ww, this._maxWidth ), this._maxHeight );
-            this._context = this._canvas.getContext( '2d' );
-            this._addTouchListener( this._canvas );
-            this._el.appendChild( this._canvas );
-        });
-    }
-
-    _addTouchListener( canvas ) {
-        this._hammer = new Hammer( canvas );
-        this._hammer.on( 'pan', ( e ) => {
-                this._lastOffset = e.deltaX;
-                this._timer.start();
-                this._timer.on( 'draw', this._panUpdate.bind( this ) );
-        });
-
-        this._hammer.on( 'panend', this._setDirection.bind( this ) );
-    }
-
-    _isPrevTerminal() {
-        return this.currentSlide === 0;
-    }
-
-    _isNextTerminal() {
-        return this.currentSlide === this._numSlides - 1;
-    }
-
-    _setDirection( e ) {
-        if( e.offsetDirection === 2 ) {
-            this._nextSlide( e );
-        } else if ( e.offsetDirection === 4 ) {
-            this._previousSlide( e );
-        }
-    }
-
-    _nextSlide( e ) {
-        if( Math.abs( e.deltaX ) > this._canvasWidth / 6  && !this._isNextTerminal() ) {
-            const duration = 250;
-            const transition = new Interpolation( e.deltaX, ( this._canvasWidth + this._margin ) * -1, duration, this._timer.time() );
-
-            this._timer.on( 'draw', ( timestamp ) => {
-                this._lastOffset = transition.play( timestamp );
-            });
-
-            transition.on( 'complete', () => {
-                this._timer.stop();
-                this.currentSlide++;
-            });
-        } else {
-            const duration = 250;
-            const transition = new Interpolation( e.deltaX, 0, duration, this._timer.time() );
-
-            this._timer.on( 'draw', ( timestamp ) => {
-                this._lastOffset = transition.play( timestamp );
-            });
-
-            transition.on( 'complete', () => {
-                this._timer.stop();
-            });
-        }
-    }
-
-
-    _previousSlide( e ) {
-        if( Math.abs( e.deltaX ) > this._canvasWidth / 6  && !this._isPrevTerminal() ) {
-            const duration = 250;
-            const transition = new Interpolation( e.deltaX, this._canvasWidth + this._margin, duration, this._timer.time() );
-
-            this._timer.on( 'draw', ( timestamp ) => {
-                this._lastOffset = transition.play( timestamp );
-            });
-
-            transition.on( 'complete', () => {
-                this._timer.stop();
-                this.currentSlide--;
-            });
-        } else {
-            const duration = 250;
-            const transition = new Interpolation( e.deltaX, 0, duration, this._timer.time() );
-
-            this._timer.on( 'draw', ( timestamp ) => {
-                this._lastOffset = transition.play( timestamp );
-            });
-
-            transition.on( 'complete', () => {
-                this._timer.stop();
-            });
-        }
-    }
-
-    _scaleImageDimensions( imgWidth, imgHeight, width ) {
-        const multiplier = Math.min( width, this._maxWidth );
-        return {
-            width: multiplier,
-            height: imgWidth >= imgHeight ? ( ( imgHeight / imgWidth ) * multiplier ) : ( ( imgWidth / imgHeight ) * multiplier )
-        };
+           this._slides = slides;
+           this.currentPosition = this._slides[this.currentSlide].leftOffset;
+           this._numSlides = slides.length;
+           this._fullWidth = ( this._width + this._margin ) * ( this._numSlides - 1 );
+           this._bindKeyEvents();
+           this._bindTouchEvents();
+           this._ready = true;
+           this._draw();
+           this._slides[this.currentSlide]._onDraw( this.pos );
+       });
     }
 
     _getSlides( gallery, cb ) {
         let promises = [];
         const slides = Array.from( gallery.querySelectorAll( '.gallery__item' ) );
 
-        slides.forEach( ( slide ) => {
+        slides.forEach( ( slide, idx ) => {
             const src = slide.src;
             const img = document.createElement( 'img' );
             let width, height;
 
             const promise = new Promise( ( resolve, reject ) => {
                 img.onload = () => {
-                    const width = img.width;
-                    const height = img.height;
-                    const dimensions = this._scaleImageDimensions( width, height, this._ww );
-
-                    this._maxHeight = dimensions.height > this._maxHeight ? dimensions.height : this._maxHeight;
-
-                    resolve({
-                        img: img,
-                        width: dimensions.width,
-                        height: dimensions.height
-                    });
+                    resolve( new Item( this._currentCtx, img, idx, this._width, this._height, this._margin ) );
                 };
 
                 img.onerror = () => {
@@ -151,45 +62,124 @@ class Gallery {
         return Promise.all( promises ).then( cb );
     }
 
-    _panUpdate() {
-        // console.log( this._lastOffset );
-        const multiplier = this._amt / ( this._canvasWidth );
-        const previous = this._slides[this.currentSlide - 1];
-        const current = this._slides[this.currentSlide];
-        const next = this._slides[this.currentSlide + 1];
+    _createCanvasLayers( gallery ) {
+        const canvasFragment = document.createDocumentFragment();
+        const canvases = ['current'];
 
-        this._context.clearRect( 0, 0, this._canvasWidth, this._canvasHeight );
-        const imgOffset = Math.min( Math.abs( this._lastOffset * multiplier ), this._amt );
+        canvases.forEach( ( canvas ) => {
+            const node = document.createElement( 'canvas' );
+            node.width = this._width;
+            node.height = this._height;
+            node.classList.add( canvas );
+            this[`_${canvas}`] = node;
+            this[`_${canvas}Ctx`] = node.getContext( '2d' );
+            canvasFragment.appendChild( node );
+        });
 
-
-        // Draw Previous:
-        if( previous ) {
-            const x = ( previous.img.width - this._lastOffset + ( this._amt * 2 ) + ( this._margin * 2 ) ) * -1;
-
-            this._context.drawImage( previous.img, imgOffset, 0, previous.img.width - this._amt, previous.img.height, x, 0, this._canvasWidth, this._canvasHeight );
-        }
-
-        // Draw Current:
-        this._context.drawImage( current.img, this._amt - imgOffset, 0, current.img.width - this._amt, current.img.height, this._lastOffset, 0, this._canvasWidth, this._canvasHeight );
-
-        // Draw Next:
-        if( next ) {
-            this._context.drawImage( next.img, imgOffset, 0, next.img.width - this._amt, next.img.height, this._canvasWidth + ( this._lastOffset + this._margin ), 0, this._canvasWidth, this._canvasHeight );
-        }
+        // Put it out:
+        gallery.appendChild( canvasFragment );
     }
 
-    _createCanvas( width, height ) {
-        const canvas = document.createElement( 'canvas' );
-        const context = canvas.getContext( '2d' );
-        const slide = this._slides[this.currentSlide];
-        const dimensions = this._scaleImageDimensions( slide.width, slide.height, width );
-        canvas.width = width;
-        canvas.height = height;
-        context.drawImage( slide.img, this._amt, 0, slide.img.width - this._amt, slide.img.height, 0, 0, dimensions.width, dimensions.height );
-        canvas.classList.add( 'gallery__canvas' );
-        this._canvasWidth = width;
-        this._canvasHeight = height;
-        return canvas;
+    _bindKeyEvents() {
+        document.addEventListener( 'keydown', ( e ) => {
+            if( e.keyCode === 37 ) {
+                if( this.pos > 0 ) {
+                    e.preventDefault();
+                    this.pos -= this._arrowMultiplier;
+                }
+            } else if( e.keyCode === 39 ) {
+                if( this.pos < this._fullWidth ) {
+                    e.preventDefault();
+                    this.pos += this._arrowMultiplier;
+                }
+            } else {
+                return;
+            }
+        });
+    }
+
+    _bindTouchEvents() {
+        this._hammer = new Hammer( this._current );
+        this._hammer.on( 'pan', ( e ) => {
+            this._drag = Math.round( e.deltaX );
+            this.pos = this.currentPosition + ( this._drag * -1 );
+
+            if( e.isFinal && Math.abs( this._drag ) >= this._width / 3 ) {
+                const which = this._drag < 0 ? this.currentSlide + 1 : this.currentSlide - 1;
+                this._goToSlide( which );
+            } else if( e.isFinal ) {
+                this._transition( this.pos, this.currentPosition );
+            }
+        });
+    }
+
+    _transition( from, to, duration = 250 ) {
+        this._transitioning = true;
+        this._transitionDuration = duration;
+        this._transitionFrom = from;
+        this._transitionTo = to;
+    }
+
+    _setCurrentPosition() {
+        const dest = this._slides[this.currentSlide].leftOffset;
+        this.currentPosition = dest;
+        this._transition( this.pos, dest );
+    }
+
+    _goToSlide( slideNo ) {
+        if( slideNo < 0 || slideNo > this._numSlides - 1 ) {
+            return;
+        }
+
+        this.currentSlide = slideNo;
+        this._setCurrentPosition();
+    }
+
+    _getSlidesInView( pos ) {
+        let inView = [];
+
+        this._slides.forEach( ( slide, idx ) => {
+            if( pos >= slide.leftBound && pos <= slide.rightBound ) {
+                inView.push( idx );
+            }
+        });
+
+        return inView;
+    }
+
+    _clear() {
+        return this._currentCtx.clearRect( 0, 0, this._width, this._height );
+    }
+
+    _draw( timestamp ) {
+        if( ( typeof timestamp === 'undefined' || ( this.pos === this._lastPos && !this._transitioning ) || !this._ready ) ) {
+            this._raf = requestAnimationFrame( this._draw.bind( this ) );
+            return;
+        }
+
+
+        if( this._transitioning ) {
+            if( this._transitionStart === false ) {
+                this._transitionStart = timestamp;
+            }
+
+
+            const delta = Math.min( ( timestamp - this._transitionStart ) / this._transitionDuration, 1 );
+            this.pos = ( ( this._transitionTo - this._transitionFrom ) * delta * delta ) + this._transitionFrom;
+
+            if( delta === 1 ) {
+                this._transitioning = false;
+                this._transitionStart = false;
+            }
+        }
+
+        this._clear();
+        this._getSlidesInView( this.pos ).forEach( ( idx ) => {
+            this._slides[idx].trigger( 'draw', this.pos );
+        });
+
+        this._lastPos = this.pos;
+        this._raf = requestAnimationFrame( this._draw.bind( this ) );
     }
 };
 

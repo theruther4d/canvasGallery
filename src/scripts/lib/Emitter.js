@@ -28,7 +28,7 @@ class Emitter {
     trigger( eventName, data ) {
         if( this._events.hasOwnProperty( eventName ) ) {
             this._events[eventName].forEach( ( callback ) => {
-                if( data ) {
+                if( typeof data !== 'undefined' ) {
                     callback( data );
                 } else {
                     callback();
