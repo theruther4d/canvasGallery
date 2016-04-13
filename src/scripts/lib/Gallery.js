@@ -17,7 +17,6 @@ class Gallery extends Emitter {
         this.currentSlide = 0;
         this._lastPos = 0;
         this.pos = 0;
-        this._arrowMultiplier = 1;
         this._ready = false;
         this._transitioning = false;
         this._transitionStart = false;
@@ -91,18 +90,16 @@ class Gallery extends Emitter {
      */
     _bindKeyEvents() {
         document.addEventListener( 'keydown', ( e ) => {
-            if( e.keyCode === 37 ) {
-                if( this.pos > 0 ) {
-                    e.preventDefault();
-                    this.pos -= this._arrowMultiplier;
-                }
-            } else if( e.keyCode === 39 ) {
-                if( this.pos < this._fullWidth ) {
-                    e.preventDefault();
-                    this.pos += this._arrowMultiplier;
-                }
-            } else {
+            if( this._transitioning ) {
                 return;
+            }
+
+            if( e.keyCode === 37 ) {
+                e.preventDefault();
+                this._goToSlide( this.currentSlide - 1 );
+            } else if( e.keyCode === 39 ) {
+                e.preventDefault();
+                this._goToSlide( this.currentSlide + 1 );
             }
         });
     }

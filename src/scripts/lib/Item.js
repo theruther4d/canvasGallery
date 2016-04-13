@@ -54,7 +54,6 @@ class Item extends Emitter {
      * @param { number } margin - the amount of margin between each slide.
      */
     _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40 ) {
-        console.log( output );
         this.output = output;
         this.img = img;
         this.idx = idx;
