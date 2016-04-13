@@ -1,6 +1,9 @@
 import Emitter from './Emitter';
 import Hammer from 'hammerjs';
 import Item from './Item';
+import raf from './raf';
+
+raf();
 
 /** Gallery Class */
 class Gallery extends Emitter {
