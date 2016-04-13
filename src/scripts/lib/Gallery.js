@@ -14,9 +14,9 @@ class Gallery extends Emitter {
      */
     constructor( el ) {
         super();
-        this._width = el.getBoundingClientRect().width;
-        this._maxHeight = 700;
-        // this._height = 400;
+        this._el = el;
+        this._width = this._el.getBoundingClientRect().width;
+        this._maxHeight = 800;
         this._margin = 40;
         this.currentSlide = 0;
         this._lastPos = 0;
@@ -26,8 +26,10 @@ class Gallery extends Emitter {
         this._transitionStart = false;
         this._drag = 0;
         this._direction = false;
+        this._ticking = false;
 
-        this._getSlides( el, ( slides ) => {
+        this._getSlides( this._el, ( slides ) => {
+            this._slideImages = slides;
             const slideDimensions = this._getSlideDimensions( slides );
             this._height = slideDimensions.tallest;
             this._createCanvasLayers( el );
@@ -40,8 +42,7 @@ class Gallery extends Emitter {
            this.currentPosition = this._slides[this.currentSlide].leftOffset;
            this._numSlides = slides.length;
            this._fullWidth = ( this._width + this._margin ) * ( this._numSlides - 1 );
-           this._bindKeyEvents();
-           this._bindTouchEvents();
+           this._bindEvents();
            this._ready = true;
            this._draw();
            this._slides[this.currentSlide]._onDraw( this.pos );
@@ -83,8 +84,9 @@ class Gallery extends Emitter {
 
 
     /**
-     *
-     *
+     * Takes an array of slides and returnes the scaled values for each, as well as the height of the tallest scaled slide.
+     * @param { array } slides
+     * @return { object } dimensions
      */
     _getSlideDimensions( slides ) {
         let tallest = 0;
@@ -102,29 +104,19 @@ class Gallery extends Emitter {
 
 
     /**
-     * HOW TO SEND THE SCALED DATA TO THE ITEM WITHOUT FIGURING IT TWICE?
-     * LOOP THROUGH TO CREATE THE SLIDES, FIGURE OUT THE MAX HEIGHT, SET IT ON THE CANVAS ONLY ONCE:
-     * CREATE CANVAS WITHOUT DIMENSIONS
-     * LOOP THROUGH SLIDES AND FIGURE OUT MAX HEIGHT, PASSING <CANVAS> AND SCALED SIZE TO THE ITEM
-     * ADD DIMENSIONS TO THE CANVAS
+     * Takes an images dimensions, and returns the scaled values to fit into the gallery.
+     * @param { number} width
+     * @param { number} height
+     * @param { number} galleryMaxWidth
+     * @param { number} galleryMaxHeight
      */
     _scaleImageDimensions( width, height, galleryMaxWidth, galleryMaxHeight ) {
         const itemRatio = width / height;
         const galleryRatio = galleryMaxWidth / galleryMaxHeight;
         const willScaleXAxis = itemRatio >= galleryRatio;
-        const newWidth = willScaleXAxis ? galleryMaxWidth : ( width * galleryMaxHeight ) / height;
-        const newHeight = willScaleXAxis ? ( height * galleryMaxWidth ) / width : galleryMaxHeight;
+        const newWidth = Math.round( willScaleXAxis ? galleryMaxWidth : ( width * galleryMaxHeight ) / height );
+        const newHeight = Math.round( willScaleXAxis ? ( height * galleryMaxWidth ) / width : galleryMaxHeight );
 
-
-        // console.log( `original width: ${width}` );
-        // console.log( `original height: ${height}` );
-        // console.log( `itemRatio: ${itemRatio}` );
-        // console.log( `galleryRatio: ${galleryRatio}` );
-        // console.log( `scaling ${willScaleXAxis ? 'width' : 'height'}` );
-        // console.log( '- - - - - - - - -' );
-        // console.log( `new width: ${newWidth}` );
-        // console.log( `new height: ${newHeight}` );
-        // console.log( '= = = = = = = = = = = =' );
         return {
             width: newWidth,
             height: newHeight
@@ -191,6 +183,52 @@ class Gallery extends Emitter {
             }
         });
     }
+
+
+    /**
+     *
+     *
+     */
+     _bindResizeEvent() {
+        const resizeHandler = ( timestamp ) => {
+            this._width = this._el.getBoundingClientRect().width;
+            const slideDimensions = this._getSlideDimensions( this._slideImages );
+            this._canvas.width = this._width;
+            this._canvas.height = slideDimensions.tallest;
+            this._slides.forEach( ( slide, idx ) => {
+                slide.refresh( slideDimensions[idx].width, slideDimensions[idx].height, this._width, this._maxHeight );
+            });
+            this._clear();
+            this._lastPos = false;
+            this.pos = this._slides[this.currentSlide].leftOffset;
+
+            this.off( 'draw', resizeHandler );
+            this._ticking = false;
+        };
+
+        window.addEventListener( 'resize', () => {
+            if( this._ticking ) {
+                console.log( 'returning' );
+                return;
+            }
+
+            this._ticking = true;
+            console.log( 'drawing' );
+
+            this.on( 'draw', resizeHandler );
+        });
+     }
+
+
+    /**
+     *
+     *
+     */
+     _bindEvents() {
+         this._bindKeyEvents();
+         this._bindTouchEvents();
+         this._bindResizeEvent();
+     }
 
 
     /**
@@ -271,6 +309,8 @@ class Gallery extends Emitter {
      * @param { number } timestamp
      */
     _draw( timestamp ) {
+        this.trigger( 'draw', timestamp );
+
         if( ( typeof timestamp === 'undefined' || ( this.pos === this._lastPos && !this._transitioning ) || !this._ready ) ) {
             this._raf = requestAnimationFrame( this._draw.bind( this ) );
             return;

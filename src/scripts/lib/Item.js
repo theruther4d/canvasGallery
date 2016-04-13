@@ -52,27 +52,43 @@ class Item extends Emitter {
      * @param { number } parentWidth - the width of the parent Gallery
      * @param { number } parentHeight - the height of the parent Gallery.
      * @param { number } margin - the amount of margin between each slide.
+     * @param { number } slideWidth - the scaled width of the slide.
+     * @param { number } slideHeight - the scaled height of the slide.
      */
     _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40, slideWidth, slideHeight ) {
-        this.slideWidth = slideWidth;
-        this.slideHeight = slideHeight;
-        this.xOffset = ( parentWidth - slideWidth ) / 2;
-        this.yOffset = ( parentHeight - slideHeight ) / 2;
+        this.idx = idx;
+        this.margin = margin;
+        this.refresh( slideWidth, slideHeight, parentWidth, parentHeight );
+
         this.output = output;
         this.img = img;
-        this.idx = idx;
-        this.parentWidth = parentWidth;
-        this.parentHeight = parentHeight;
         this.width = this.img.width;
         this.height = this.img.height;
         this.canvas = document.createElement( 'canvas' );
         this.ctx = this.canvas.getContext( '2d' );
-        this.leftBound = ( ( this.idx - 1 ) * this.parentWidth ) + ( this.idx * margin );
-        this.rightBound = ( ( this.idx + 1 ) * this.parentWidth ) + ( this.idx * margin );
-        this.leftOffset = ( this.idx * this.parentWidth ) + ( this.idx * margin );
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.ctx.drawImage( this.img, 0, 0, this.width, this.height );
+    }
+
+
+    /**
+     * Calculates positioning and offsets.
+     * @param { number } slideWidth - the scaled width of the slide.
+     * @param { number } slideHeight - the scaled height of the slide.
+     * @param { number } parentWidth - the width of the parent Gallery
+     * @param { number } parentHeight - the height of the parent Gallery.
+     */
+    refresh( slideWidth, slideHeight, parentWidth, parentHeight ) {
+        this.slideWidth = slideWidth;
+        this.slideHeight = slideHeight;
+        this.parentWidth = parentWidth;
+        this.parentHeight = parentHeight;
+        this.xOffset = ( parentWidth - slideWidth ) / 2;
+        this.yOffset = ( parentHeight - slideHeight ) / 2;
+        this.leftBound = ( ( this.idx - 1 ) * this.parentWidth ) + ( this.idx * this.margin );
+        this.rightBound = ( ( this.idx + 1 ) * this.parentWidth ) + ( this.idx * this.margin );
+        this.leftOffset = ( this.idx * this.parentWidth ) + ( this.idx * this.margin );
     }
 };
 
