@@ -25,8 +25,8 @@ class Item extends Emitter {
         const sHeight = this.height;
         const dx = this.leftOffset - pos;
         const dy = 0;
-        const dWidth = Math.min( this.parentWidth, this.width );
-        const dHeight = Math.min( this.parentHeight, this.height );
+        const dWidth = this.parentWidth;
+        const dHeight = this.parentHeight;
 
         this._parallax( dx );
         this.output.drawImage( this.canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight );
@@ -53,7 +53,7 @@ class Item extends Emitter {
      * @param { number } parentHeight - the height of the parent Gallery.
      * @param { number } margin - the amount of margin between each slide.
      */
-    _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40, offsetBefore = 0 ) {
+    _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40 ) {
         this.output = output;
         this.img = img;
         this.idx = idx;
@@ -63,12 +63,9 @@ class Item extends Emitter {
         this.height = this.img.height;
         this.canvas = document.createElement( 'canvas' );
         this.ctx = this.canvas.getContext( '2d' );
-        // this.leftBound = ( ( this.idx - 1 ) * this.parentWidth ) + ( this.idx * margin );
-        // this.rightBound = ( ( this.idx + 1 ) * this.parentWidth ) + ( this.idx * margin );
-        this.leftBound = Math.max( offsetBefore - Math.min( this.width, parentWidth ), 0 );
-        this.rightBound = offsetBefore;
-        // this.leftOffset = ( this.idx * this.parentWidth ) + ( this.idx * margin );
-        this.leftOffset = offsetBefore;
+        this.leftBound = ( ( this.idx - 1 ) * this.parentWidth ) + ( this.idx * margin );
+        this.rightBound = ( ( this.idx + 1 ) * this.parentWidth ) + ( this.idx * margin );
+        this.leftOffset = ( this.idx * this.parentWidth ) + ( this.idx * margin );
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.ctx.drawImage( this.img, 0, 0, this.width, this.height );

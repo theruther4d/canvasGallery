@@ -15,7 +15,8 @@ class Gallery extends Emitter {
     constructor( el ) {
         super();
         this._width = el.getBoundingClientRect().width;
-        this._height = 400;
+        this._maxHeight = 700;
+        // this._height = 400;
         this._margin = 40;
         this.currentSlide = 0;
         this._lastPos = 0;
@@ -90,7 +91,7 @@ class Gallery extends Emitter {
         let tallest = 0;
 
         slides.forEach( ( slide ) => {
-            const dimensions = this._scaleImageDimensions( slide.width, slide.height, this._width );
+            const dimensions = this._scaleImageDimensions( slide.width, slide.height, this._width, this._maxHeight );
             tallest = dimensions.height > tallest ? dimensions.height : tallest;
         });
 
@@ -99,14 +100,32 @@ class Gallery extends Emitter {
 
 
     /**
-     *
-     *
+     * HOW TO SEND THE SCALED DATA TO THE ITEM WITHOUT FIGURING IT TWICE?
+     * LOOP THROUGH TO CREATE THE SLIDES, FIGURE OUT THE MAX HEIGHT, SET IT ON THE CANVAS ONLY ONCE:
+     * CREATE CANVAS WITHOUT DIMENSIONS
+     * LOOP THROUGH SLIDES AND FIGURE OUT MAX HEIGHT, PASSING <CANVAS> AND SCALED SIZE TO THE ITEM
+     * ADD DIMENSIONS TO THE CANVAS
      */
-    _scaleImageDimensions( width, height, scale ) {
-        const multiplier = Math.min( width, scale );
+    _scaleImageDimensions( width, height, galleryMaxWidth, galleryMaxHeight ) {
+        const itemRatio = width / height;
+        const galleryRatio = galleryMaxWidth / galleryMaxHeight;
+        const willScaleXAxis = itemRatio >= galleryRatio;
+        const newWidth = willScaleXAxis ? galleryMaxWidth : ( width * galleryMaxHeight ) / height;
+        const newHeight = willScaleXAxis ? ( height * galleryMaxWidth ) / width : galleryMaxHeight;
+
+
+        // console.log( `original width: ${width}` );
+        // console.log( `original height: ${height}` );
+        // console.log( `itemRatio: ${itemRatio}` );
+        // console.log( `galleryRatio: ${galleryRatio}` );
+        // console.log( `scaling ${willScaleXAxis ? 'width' : 'height'}` );
+        // console.log( '- - - - - - - - -' );
+        // console.log( `new width: ${newWidth}` );
+        // console.log( `new height: ${newHeight}` );
+        // console.log( '= = = = = = = = = = = =' );
         return {
-            width: multiplier,
-            height: width >= height ? ( ( height / width ) * multiplier ) : ( ( width / height ) * multiplier )
+            width: newWidth,
+            height: newHeight
         };
     }
 
