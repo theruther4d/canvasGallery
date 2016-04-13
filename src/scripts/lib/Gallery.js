@@ -208,12 +208,10 @@ class Gallery extends Emitter {
 
         window.addEventListener( 'resize', () => {
             if( this._ticking ) {
-                console.log( 'returning' );
                 return;
             }
 
             this._ticking = true;
-            console.log( 'drawing' );
 
             this.on( 'draw', resizeHandler );
         });
