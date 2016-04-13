@@ -90,16 +90,16 @@ class Gallery extends Emitter {
      */
     _bindKeyEvents() {
         document.addEventListener( 'keydown', ( e ) => {
-            if( this._transitioning ) {
+            if( this._transitioning || e.altKey || e.ctrlKey || e.shiftKey ) {
                 return;
             }
 
             if( e.keyCode === 37 ) {
                 e.preventDefault();
-                this._goToSlide( this.currentSlide - 1 );
+                this._goToSlide( this.currentSlide - 1, 500 );
             } else if( e.keyCode === 39 ) {
                 e.preventDefault();
-                this._goToSlide( this.currentSlide + 1 );
+                this._goToSlide( this.currentSlide + 1, 500 );
             }
         });
     }
@@ -157,10 +157,10 @@ class Gallery extends Emitter {
     /**
      * Advances to the next/previous slide.
      */
-    _setCurrentPosition() {
+    _setCurrentPosition( duration = 250 ) {
         const dest = this._slides[this.currentSlide].leftOffset;
         this.currentPosition = dest;
-        this._transition( this.pos, dest );
+        this._transition( this.pos, dest, duration );
     }
 
 
@@ -168,13 +168,13 @@ class Gallery extends Emitter {
      * Goes to the specified slide.
      * @param { number } slideNo
      */
-    _goToSlide( slideNo ) {
+    _goToSlide( slideNo, duration = 250 ) {
         if( slideNo < 0 || slideNo > this._numSlides - 1 ) {
             return;
         }
 
         this.currentSlide = slideNo;
-        this._setCurrentPosition();
+        this._setCurrentPosition( duration );
         this.trigger( 'update' );
     }
 
