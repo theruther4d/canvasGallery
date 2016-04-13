@@ -2,12 +2,13 @@ import Emitter from './Emitter';
 import Hammer from 'hammerjs';
 import Item from './Item';
 
-/*
- * Variable transition duration based on how far we are from the destination.
- * Resize handler
- * * destroy() method or update() for Item
- */
+/** Gallery Class */
 class Gallery extends Emitter {
+
+    /**
+     * Constructor.
+     * @param { DOM node } el - the DOM node to gallerify
+     */
     constructor( el ) {
         super();
         this._width = 400;
@@ -38,6 +39,11 @@ class Gallery extends Emitter {
        });
     }
 
+    /**
+     * Fetches images from the DOM and creates Items.
+     * @param { DOM node } gallery
+     * @param { function } cb - the callback to be executed when the promises resolve. Receives an array of items as the only parameter.
+     */
     _getSlides( gallery, cb ) {
         let promises = [];
         const slides = Array.from( gallery.querySelectorAll( '.gallery__item' ) );
@@ -49,7 +55,7 @@ class Gallery extends Emitter {
 
             const promise = new Promise( ( resolve, reject ) => {
                 img.onload = () => {
-                    resolve( new Item( this._currentCtx, img, idx, this._width, this._height, this._margin ) );
+                    resolve( new Item( this._ctx, img, idx, this._width, this._height, this._margin ) );
                 };
 
                 img.onerror = () => {
@@ -64,24 +70,25 @@ class Gallery extends Emitter {
         return Promise.all( promises ).then( cb );
     }
 
-    _createCanvasLayers( gallery ) {
-        const canvasFragment = document.createDocumentFragment();
-        const canvases = ['current'];
 
-        canvases.forEach( ( canvas ) => {
-            const node = document.createElement( 'canvas' );
-            node.width = this._width;
-            node.height = this._height;
-            node.classList.add( canvas );
-            this[`_${canvas}`] = node;
-            this[`_${canvas}Ctx`] = node.getContext( '2d' );
-            canvasFragment.appendChild( node );
-        });
+    /**
+     * Creates the <canvas> element.
+     * @param { DOM node } gallery
+     */
+    _createCanvasLayers( gallery ) {
+        this._canvas = document.createElement( 'canvas' );
+        this._canvas.width = this._width;
+        this._canvas.height = this._height;
+        this._ctx = this._canvas.getContext( '2d' );
 
         // Put it out:
-        gallery.appendChild( canvasFragment );
+        gallery.appendChild( this._canvas );
     }
 
+
+    /**
+     * Attaches key listeners.
+     */
     _bindKeyEvents() {
         document.addEventListener( 'keydown', ( e ) => {
             if( e.keyCode === 37 ) {
@@ -100,8 +107,12 @@ class Gallery extends Emitter {
         });
     }
 
+
+    /**
+     * Attaches touch listeners.
+     */
     _bindTouchEvents() {
-        this._hammer = new Hammer( this._current );
+        this._hammer = new Hammer( this._canvas );
         this._hammer.on( 'pan', ( e ) => {
             this._direction = e.direction === 4 || e.direction === 2 ? e.direction : this._direction;
             this._drag = Math.round( e.deltaX );
@@ -122,10 +133,22 @@ class Gallery extends Emitter {
         });
     }
 
+
+    /**
+     * Detects if the current slide can move in the current direction.
+     * @return { boolean }
+     */
     _isTerminal() {
         return ( this.currentSlide === 0 && this._direction === 4 ) || ( this.currentSlide === this._numSlides - 1 && this._direction === 2 );
     }
 
+
+    /**
+     * Creates a transition from one position to another.
+     * @param { number } from
+     * @param { number } to
+     * @param { number = 250 } duration
+     */
     _transition( from, to, duration = 250 ) {
         this._transitioning = true;
         this._transitionDuration = duration;
@@ -133,12 +156,21 @@ class Gallery extends Emitter {
         this._transitionTo = to;
     }
 
+
+    /**
+     * Advances to the next/previous slide.
+     */
     _setCurrentPosition() {
         const dest = this._slides[this.currentSlide].leftOffset;
         this.currentPosition = dest;
         this._transition( this.pos, dest );
     }
 
+
+    /**
+     * Goes to the specified slide.
+     * @param { number } slideNo
+     */
     _goToSlide( slideNo ) {
         if( slideNo < 0 || slideNo > this._numSlides - 1 ) {
             return;
@@ -149,6 +181,12 @@ class Gallery extends Emitter {
         this.trigger( 'update' );
     }
 
+
+    /**
+     * Returns the currently visible slides.
+     * @param { number } pos - the current position
+     * @return { array } slides
+     */
     _getSlidesInView( pos ) {
         let inView = [];
 
@@ -161,10 +199,18 @@ class Gallery extends Emitter {
         return inView;
     }
 
+    /**
+     * Clears the <canvas> for next paint.
+     */
     _clear() {
-        return this._currentCtx.clearRect( 0, 0, this._width, this._height );
+        return this._ctx.clearRect( 0, 0, this._width, this._height );
     }
 
+
+    /**
+     * Callback executed at each animationFrame.
+     * @param { number } timestamp
+     */
     _draw( timestamp ) {
         if( ( typeof timestamp === 'undefined' || ( this.pos === this._lastPos && !this._transitioning ) || !this._ready ) ) {
             this._raf = requestAnimationFrame( this._draw.bind( this ) );

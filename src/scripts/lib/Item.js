@@ -1,6 +1,11 @@
 import Emitter from './Emitter';
 
+/** Item class */
 class Item extends Emitter {
+
+    /**
+     * Constructor. See _getProps for parameters.
+     */
     constructor( ...props ) {
         super();
         this._getProps( ...props );
@@ -8,6 +13,11 @@ class Item extends Emitter {
         this.on( 'draw', this._boundOnDraw );
     }
 
+
+    /**
+     * Callback executed when 'draw' event is triggered.
+     * @param { number } pos
+     */
     _onDraw( pos ) {
         const sx = 0;
         const sy = 0;
@@ -22,13 +32,29 @@ class Item extends Emitter {
         this.output.drawImage( this.canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight );
     }
 
+
+    /**
+     * Handles parallax effect.
+     * @param { number } dx - the difference between the current position and the Item center.
+     */
     _parallax( dx ) {
         const multiplier = Math.round( dx * -0.25 );
         this.ctx.clearRect( 0, 0, this.width, this.height );
         this.ctx.drawImage( this.img, multiplier, 0, this.width, this.height );
     }
 
+
+    /**
+     * Extracts parameters needed for setup.
+     * @param { DOM node } output - the <canvas> to draw to _onDraw.
+     * @param { DOM node } img - the <img> element that this slide is based on.
+     * @param { number } idx - the index of this slide in relation to its' siblings.
+     * @param { number } parentWidth - the width of the parent Gallery
+     * @param { number } parentHeight - the height of the parent Gallery.
+     * @param { number } margin - the amount of margin between each slide.
+     */
     _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40 ) {
+        console.log( output );
         this.output = output;
         this.img = img;
         this.idx = idx;
