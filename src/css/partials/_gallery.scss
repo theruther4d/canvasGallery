@@ -3,31 +3,11 @@ html {
 }
 
 .gallery {
-    max-width: 100%;
-    // width: 400px;
-    // height: 400px;
+    max-width: 800px;
     margin: 100px auto;
     position: relative;
 
     &__item {
         display: none;
-    }
-
-    canvas {
-        // position: absolute;
-        // top: 0;
-        // left: 0;
-        //
-        // &.previous {
-        //     z-index: 1;
-        // }
-        //
-        // &.current {
-        //     z-index: 2;
-        // }
-        //
-        // &.next {
-        //     z-index: 3;
-        // }
     }
 }

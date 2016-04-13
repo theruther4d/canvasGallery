@@ -198,11 +198,11 @@ class Gallery extends Emitter {
             this._slides.forEach( ( slide, idx ) => {
                 slide.refresh( slideDimensions[idx].width, slideDimensions[idx].height, this._width, this._maxHeight );
             });
+            this.off( 'draw', resizeHandler );
             this._clear();
             this._lastPos = false;
             this.pos = this._slides[this.currentSlide].leftOffset;
 
-            this.off( 'draw', resizeHandler );
             this._ticking = false;
         };
 
