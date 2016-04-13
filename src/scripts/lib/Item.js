@@ -23,10 +23,10 @@ class Item extends Emitter {
         const sy = 0;
         const sWidth = this.width;
         const sHeight = this.height;
-        const dx = this.leftOffset - pos;
-        const dy = 0;
-        const dWidth = this.parentWidth;
-        const dHeight = this.parentHeight;
+        const dx = this.leftOffset - pos + this.xOffset;
+        const dy = 0 + this.yOffset;
+        const dWidth = this.slideWidth;
+        const dHeight = this.slideHeight;
 
         this._parallax( dx );
         this.output.drawImage( this.canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight );
@@ -38,7 +38,7 @@ class Item extends Emitter {
      * @param { number } dx - the difference between the current position and the Item center.
      */
     _parallax( dx ) {
-        const multiplier = Math.round( dx * -0.25 );
+        const multiplier = Math.round( ( dx - this.xOffset ) * -0.25 );
         this.ctx.clearRect( 0, 0, this.width, this.height );
         this.ctx.drawImage( this.img, multiplier, 0, this.width, this.height );
     }
@@ -53,7 +53,11 @@ class Item extends Emitter {
      * @param { number } parentHeight - the height of the parent Gallery.
      * @param { number } margin - the amount of margin between each slide.
      */
-    _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40 ) {
+    _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40, slideWidth, slideHeight ) {
+        this.slideWidth = slideWidth;
+        this.slideHeight = slideHeight;
+        this.xOffset = ( parentWidth - slideWidth ) / 2;
+        this.yOffset = ( parentHeight - slideHeight ) / 2;
         this.output = output;
         this.img = img;
         this.idx = idx;

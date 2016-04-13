@@ -28,14 +28,13 @@ class Gallery extends Emitter {
         this._direction = false;
 
         this._getSlides( el, ( slides ) => {
-            this._height = this._getTallestSlide( slides );
+            const slideDimensions = this._getSlideDimensions( slides );
+            this._height = slideDimensions.tallest;
             this._createCanvasLayers( el );
             this._slides = [];
-            let offsetBefore = 0;
 
             slides.forEach( ( slide, idx ) => {
-                this._slides.push( new Item( this._ctx, slide, idx, this._width, this._height, this._margin, offsetBefore ) );
-                offsetBefore += Math.min( slide.width, this._width ) + this._margin;
+                this._slides.push( new Item( this._ctx, slide, idx, this._width, this._height, this._margin, slideDimensions[idx].width, slideDimensions[idx].height ) );
             });
 
            this.currentPosition = this._slides[this.currentSlide].leftOffset;
@@ -87,15 +86,18 @@ class Gallery extends Emitter {
      *
      *
      */
-    _getTallestSlide( slides ) {
+    _getSlideDimensions( slides ) {
         let tallest = 0;
+        let info = {};
 
-        slides.forEach( ( slide ) => {
+        slides.forEach( ( slide, idx ) => {
             const dimensions = this._scaleImageDimensions( slide.width, slide.height, this._width, this._maxHeight );
             tallest = dimensions.height > tallest ? dimensions.height : tallest;
+            info[idx] = dimensions;
         });
 
-        return tallest;
+        info.tallest = tallest;
+        return info;
     }
 
 
