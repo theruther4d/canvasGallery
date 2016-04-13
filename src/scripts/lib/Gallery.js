@@ -14,7 +14,7 @@ class Gallery extends Emitter {
      */
     constructor( el ) {
         super();
-        this._width = 400;
+        this._width = el.getBoundingClientRect().width;
         this._height = 400;
         this._margin = 40;
         this.currentSlide = 0;
@@ -23,12 +23,20 @@ class Gallery extends Emitter {
         this._ready = false;
         this._transitioning = false;
         this._transitionStart = false;
-        this._createCanvasLayers( el );
         this._drag = 0;
         this._direction = false;
 
         this._getSlides( el, ( slides ) => {
-           this._slides = slides;
+            this._height = this._getTallestSlide( slides );
+            this._createCanvasLayers( el );
+            this._slides = [];
+            let offsetBefore = 0;
+
+            slides.forEach( ( slide, idx ) => {
+                this._slides.push( new Item( this._ctx, slide, idx, this._width, this._height, this._margin, offsetBefore ) );
+                offsetBefore += Math.min( slide.width, this._width ) + this._margin;
+            });
+
            this.currentPosition = this._slides[this.currentSlide].leftOffset;
            this._numSlides = slides.length;
            this._fullWidth = ( this._width + this._margin ) * ( this._numSlides - 1 );
@@ -57,7 +65,8 @@ class Gallery extends Emitter {
 
             const promise = new Promise( ( resolve, reject ) => {
                 img.onload = () => {
-                    resolve( new Item( this._ctx, img, idx, this._width, this._height, this._margin ) );
+                    // resolve( new Item( this._ctx, img, idx, this._width, this._height, this._margin ) );
+                    resolve( img );
                 };
 
                 img.onerror = () => {
@@ -70,6 +79,35 @@ class Gallery extends Emitter {
         });
 
         return Promise.all( promises ).then( cb );
+    }
+
+
+    /**
+     *
+     *
+     */
+    _getTallestSlide( slides ) {
+        let tallest = 0;
+
+        slides.forEach( ( slide ) => {
+            const dimensions = this._scaleImageDimensions( slide.width, slide.height, this._width );
+            tallest = dimensions.height > tallest ? dimensions.height : tallest;
+        });
+
+        return tallest;
+    }
+
+
+    /**
+     *
+     *
+     */
+    _scaleImageDimensions( width, height, scale ) {
+        const multiplier = Math.min( width, scale );
+        return {
+            width: multiplier,
+            height: width >= height ? ( ( height / width ) * multiplier ) : ( ( width / height ) * multiplier )
+        };
     }
 
 
