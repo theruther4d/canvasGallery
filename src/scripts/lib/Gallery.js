@@ -12,11 +12,12 @@ class Gallery extends Emitter {
      * Constructor.
      * @param { DOM node } el - the DOM node to gallerify
      */
-    constructor( el ) {
+    constructor( { el, maxWidth, maxHeight = 800, fluid = true } ) {
         super();
         this._el = el;
-        this._width = this._el.getBoundingClientRect().width;
-        this._maxHeight = 800;
+        this._width = maxWidth || this._el.getBoundingClientRect().width;
+        this._maxHeight = maxHeight;
+        this._fluid = fluid;
         this._margin = 40;
         this.currentSlide = 0;
         this._lastPos = 0;
@@ -225,7 +226,9 @@ class Gallery extends Emitter {
      _bindEvents() {
          this._bindKeyEvents();
          this._bindTouchEvents();
-         this._bindResizeEvent();
+         if( this._fluid ) {
+             this._bindResizeEvent();
+         }
      }
 
 
