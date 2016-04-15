@@ -4,7 +4,7 @@ A gallery module inspired by iOS photos app's subtle parallax effect. See a demo
 ```javascript
 myGallery = new Gallery({
     el: document.getElementById( 'gallery' ),
-    maxHight: 600px,
+    maxHight: 600,
 });
 ```
 
