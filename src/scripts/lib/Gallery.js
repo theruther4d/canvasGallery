@@ -376,6 +376,46 @@ class Gallery extends Emitter {
         this._lastPos = this.pos;
         this._raf = requestAnimationFrame( this._draw.bind( this ) );
     }
+
+    destroy() {
+        this._el.removeChild( this._canvas );
+        this._canvas = null;
+        this._el = null;
+        this._ctx = null;
+        this._direction = null;
+        this._drag = null;
+        this._events = null;
+        this._fluid = null;
+        this._fullWidth = null;
+        if( this._hammer ) {
+            this._hammer.destroy();
+        }
+        this._hammer = null;
+        this._height = null;
+        this._keyBoardTransitionDuration = null;
+        this._keyboard = null;
+        this._lastPos = null;
+        this._margin = null;
+        this._maxHeight = null;
+        this._numSlides = null;
+        if( this._raf ) {
+            cancelAnimationFrame( this._raf );
+        }
+        this._ready = null;
+        this._slideImages = null;
+        this._slides.forEach( ( slide ) => {
+            slide._destroy();
+        });
+        this._slides = null;
+        this._ticking = null;
+        this._touch = null;
+        this._transitionStart = null;
+        this._transitioning = null;
+        this._width = null;
+        this.currentPosition = null;
+        this.currentSlide = null;
+        this.pos = null;
+    }
 };
 
 export default Gallery;

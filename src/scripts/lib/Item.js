@@ -90,6 +90,30 @@ class Item extends Emitter {
         this.rightBound = ( ( this.idx + 1 ) * this.parentWidth ) + ( this.idx * this.margin );
         this.leftOffset = ( this.idx * this.parentWidth ) + ( this.idx * this.margin );
     }
+
+    _destroy() {
+        this._boundOnDraw = null;
+        this._events = null;
+        this.canvas = null;
+        this.ctx = null;
+        this.height = null;
+        this.idx = null;
+        this.img = null;
+        this.leftBound = null;
+        this.leftOffset = null;
+        this.margin = null;
+        this.output = null;
+        this.parentHeight = null;
+        this.parentWidth = null;
+        this.rightBound = null;
+        this.leftBound = null;
+        this.leftOffset = null;
+        this.slideHeight = null;
+        this.slideWidth = null;
+        this.width = null;
+        this.xOffset = null;
+        this.yOffset = null;
+    }
 };
 
 export default Item;

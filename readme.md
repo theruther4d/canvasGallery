@@ -42,3 +42,4 @@ myGallery = new Gallery({
 * `next { function }` - Attempts to advance to the next slide.
 * `previous { function }` - Attempts to advance to the previous slide.
 * `currentSlide { property }` - The zero-based index of the current slide.
+* `destroy { function }` - Destroys the Gallery instance.
