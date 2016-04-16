@@ -17,7 +17,7 @@ myGallery = new Gallery({
 * `fluid { boolean = true }` - Whether or not to scale the gallery to the window width.
 
 ## API
-* `on` - Attaches a callback to an event. The callback is passed an `event` object containing the following properties:
+* `on( eventName, callback) { function }` - Attaches a callback to an event. The callback is passed an `event` object containing the following properties:
     * `numSlides { number }` - The number of slides in the gallery.
     * `currentSlide { number }` - The zero-based index of the currently selected slide.
     * Events:
@@ -33,3 +33,7 @@ myGallery = new Gallery({
             // Do stuff with the event here
         });
         ```
+* `goTo( slideNumber [, duration = 250] ) { function }` - Advances the gallery to the specified slide, **if** possible.
+    * `slideNumber { number }` - The zero-based index of the slide to move to.
+    * `duration { number = 250 }` - Optional transition duration when moving to the specified slide.pre
+* `currentSlide { property }` - The zero-based index of the current slide.

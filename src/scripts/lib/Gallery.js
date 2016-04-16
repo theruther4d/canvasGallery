@@ -154,10 +154,10 @@ class Gallery extends Emitter {
 
             if( e.keyCode === 37 ) {
                 e.preventDefault();
-                this._goToSlide( this.currentSlide - 1, 500 );
+                this.goTo( this.currentSlide - 1, 500 );
             } else if( e.keyCode === 39 ) {
                 e.preventDefault();
-                this._goToSlide( this.currentSlide + 1, 500 );
+                this.goTo( this.currentSlide + 1, 500 );
             }
         });
     }
@@ -181,7 +181,7 @@ class Gallery extends Emitter {
 
             if( e.isFinal && Math.abs( this._drag ) >= this._width / 3 && !this._isTerminal() ) {
                 const which = this._drag < 0 ? this.currentSlide + 1 : this.currentSlide - 1;
-                this._goToSlide( which );
+                this.goTo( which );
             } else if( e.isFinal ) {
                 this._transition( this.pos, this.currentPosition );
             }
@@ -272,7 +272,7 @@ class Gallery extends Emitter {
      * Goes to the specified slide.
      * @param { number } slideNo
      */
-    _goToSlide( slideNo, duration = 250 ) {
+    goTo( slideNo, duration = 250 ) {
         if( slideNo < 0 || slideNo > this._numSlides - 1 ) {
             return;
         }
