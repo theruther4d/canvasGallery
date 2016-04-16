@@ -11,13 +11,21 @@ class Gallery extends Emitter {
     /**
      * Constructor.
      * @param { DOM node } el - the DOM node to gallerify
+     * @param { number } maxWidth - the max width of the Gallery.
+     * @param { number } maxHeight - the max height of the Gallery.
+     * @param { boolean } fluid - whether to resize the Gallery with the window width.
+     * @param { boolean } keyboard - whether to add keyboard support.
+     * @param { boolean } touch - whether to add touch support.
+     * @param { boolean } keyBoardTransitionDuration - the length of the transition when the left / right arrows are pressed.
      */
-    constructor( { el, maxWidth, maxHeight = 800, fluid = true } ) {
+    constructor( { el, maxWidth, maxHeight = 800, fluid = true, keyboard = true, touch = true, keyBoardTransitionDuration = 500 } ) {
         super();
         this._el = el;
         this._width = maxWidth || this._el.getBoundingClientRect().width;
         this._maxHeight = maxHeight;
         this._fluid = fluid;
+        this._keyboard = keyboard;
+        this._touch = touch;
         this._margin = 40;
         this.currentSlide = 0;
         this._lastPos = 0;
@@ -28,6 +36,7 @@ class Gallery extends Emitter {
         this._drag = 0;
         this._direction = false;
         this._ticking = false;
+        this._keyBoardTransitionDuration = keyBoardTransitionDuration;
 
         this._getSlides( this._el, ( slides ) => {
             this._slideImages = slides;
@@ -154,10 +163,10 @@ class Gallery extends Emitter {
 
             if( e.keyCode === 37 ) {
                 e.preventDefault();
-                this.goTo( this.currentSlide - 1, 500 );
+                this.goTo( this.currentSlide - 1, this._keyBoardTransitionDuration );
             } else if( e.keyCode === 39 ) {
                 e.preventDefault();
-                this.goTo( this.currentSlide + 1, 500 );
+                this.goTo( this.currentSlide + 1, this._keyBoardTransitionDuration );
             }
         });
     }
@@ -190,8 +199,7 @@ class Gallery extends Emitter {
 
 
     /**
-     *
-     *
+     * Attaches resize handler.
      */
      _bindResizeEvent() {
         const resizeHandler = ( timestamp ) => {
@@ -223,12 +231,17 @@ class Gallery extends Emitter {
 
 
     /**
-     *
-     *
+     * Binds applicable events.
      */
      _bindEvents() {
-         this._bindKeyEvents();
-         this._bindTouchEvents();
+         if( this._touch ) {
+             this._bindTouchEvents();
+         }
+
+         if( this._keyboard ) {
+             this._bindKeyEvents();
+         }
+
          if( this._fluid ) {
              this._bindResizeEvent();
          }

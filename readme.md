@@ -15,6 +15,9 @@ myGallery = new Gallery({
 * `maxWidth { number }` - The maximum width of the gallery.
 * `maxHeight { number }` - The maxiumum height of the gallery.
 * `fluid { boolean = true }` - Whether or not to scale the gallery to the window width.
+* `keyboard { boolean = true }` - Whether to add keyboard support.
+* `keyBoardTransitionDuration { number = 500 }` - The length of the transition when the left / right arrows are pressed.
+* `touch { boolean = true }` - Whether to add touch support.
 
 ## API
 * `on( eventName, callback) { function }` - Attaches a callback to an event. The callback is passed an `event` object containing the following properties:
@@ -36,4 +39,6 @@ myGallery = new Gallery({
 * `goTo( slideNumber [, duration = 250] ) { function }` - Advances the gallery to the specified slide, **if** possible.
     * `slideNumber { number }` - The zero-based index of the slide to move to.
     * `duration { number = 250 }` - Optional transition duration when moving to the specified slide.pre
+* `next { function }` - Attempts to advance to the next slide.
+* `previous { function }` - Attempts to advance to the previous slide.
 * `currentSlide { property }` - The zero-based index of the current slide.
