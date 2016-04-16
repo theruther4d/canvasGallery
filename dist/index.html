@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8" />
-        <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Canvas Gallery</title>
         <link rel="stylesheet" href="style.css">
     </head>
@@ -16,12 +15,35 @@
             <img src="images/6.jpg" alt="" class="gallery__item">
             <img src="images/7.jpg" alt="" class="gallery__item">
         </div>
+        <ul class="pagination"></ul>
         <script src="index.js"></script>
         <script>
             (function() {
                 window.myGallery = new Gallery({
                     el: document.getElementById( 'gallery' ),
                     fluid: false
+                });
+
+                myGallery.on( 'ready', function( e ) {
+                    var pagination = document.querySelector( '.pagination' );
+                    var paginationFrag = document.createDocumentFragment();
+
+                    for( var i = 0; i < e.numSlides; i++ ) {
+                        var paginationItem = document.createElement( 'li' );
+                        paginationItem.classList.add( 'pagination__item' );
+                        if( e.currentSlide === i ) {
+                            paginationItem.classList.add( 'pagination__item--selected' );
+                        }
+                        paginationItem.textContent = i + 1;
+                        paginationFrag.appendChild( paginationItem );
+                    }
+
+                    pagination.appendChild( paginationFrag );
+                });
+
+                myGallery.on( 'update', function( e ) {
+                    document.querySelector( '.pagination__item--selected' ).classList.remove( 'pagination__item--selected' );
+                    document.querySelectorAll( '.pagination__item' )[e.currentSlide].classList.add( 'pagination__item--selected' );
                 });
             })();
         </script>

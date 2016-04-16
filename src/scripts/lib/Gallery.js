@@ -47,7 +47,10 @@ class Gallery extends Emitter {
            this._ready = true;
            this._draw();
            this._slides[this.currentSlide]._onDraw( this.pos );
-           this.trigger( 'ready' );
+           this.trigger( 'ready', {
+               numSlides: this._numSlides,
+               currentSlide: this.currentSlide
+           });
        });
     }
 
@@ -276,7 +279,10 @@ class Gallery extends Emitter {
 
         this.currentSlide = slideNo;
         this._setCurrentPosition( duration );
-        this.trigger( 'update' );
+        this.trigger( 'update', {
+            numSlides: this._numSlides,
+            currentSlide: this.currentSlide
+        });
     }
 
 

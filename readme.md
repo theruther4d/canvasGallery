@@ -15,3 +15,21 @@ myGallery = new Gallery({
 * `maxWidth { number }` - The maximum width of the gallery.
 * `maxHeight { number }` - The maxiumum height of the gallery.
 * `fluid { boolean = true }` - Whether or not to scale the gallery to the window width.
+
+## API
+* `on` - Attaches a callback to an event. The callback is passed an `event` object containing the following properties:
+    * `numSlides { number }` - The number of slides in the gallery.
+    * `currentSlide { number }` - The zero-based index of the currently selected slide.
+    * Events:
+        * `ready` - When the gallery has been instantiated and all public properties are available. Useful for doing things like setting up pagination. Ex:
+        ```javascript
+        myGallery.on( 'ready', function( e ) {
+            // Do stuff with the event here
+        })
+        ```
+        * `update` - When the current slide has changed. Useful for doing things like updating pagination. Ex:
+        ```javascript
+        myGallery.on( 'update', function( e ) {
+            // Do stuff with the event here
+        });
+        ```

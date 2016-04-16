@@ -4,10 +4,36 @@ html {
 
 .gallery {
     max-width: 800px;
-    margin: 100px auto;
+    margin: 100px auto 10px;
     position: relative;
 
     &__item {
         display: none;
+    }
+}
+
+.pagination {
+    text-align: center;
+    margin-bottom: 200px;
+
+    &__item {
+        font-size: 0;
+        color: transparent;
+        line-height: 0;
+        width: 10px;
+        height: 10px;
+        background: rgba( 0, 0, 0, 0.2 );
+        border-radius: 50%;
+        display: inline-block;
+        cursor: pointer;
+        transition: background 0.25s ease;
+
+        &--selected {
+            background: rgba( 0, 0, 0, 1 );
+        }
+
+        + li {
+            margin-left: 10px;
+        }
     }
 }
