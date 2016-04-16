@@ -287,6 +287,22 @@ class Gallery extends Emitter {
 
 
     /**
+     * Attempts to go to the next slide.
+     */
+    next() {
+        this.goTo( this.currentSlide + 1 );
+    }
+
+
+    /**
+     * Attempts to go to the previous slide.
+     */
+    previous() {
+        this.goTo( this.currentSlide - 1 );
+    }
+
+
+    /**
      * Returns the currently visible slides.
      * @param { number } pos - the current position
      * @return { array } slides

@@ -6,6 +6,8 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
+        <a href="#" class="next">NEXT</a>
+        <a href="#" class="previous">PREVIOUS</a>
         <div class="gallery" id="gallery">
             <img src="images/1.jpg" alt="" class="gallery__item">
             <img src="images/2.jpg" alt="" class="gallery__item">
@@ -54,6 +56,18 @@
                     var idx = e.target.getAttribute( 'data-index' )
                     myGallery.goTo( idx );
                 };
+
+                document.querySelector( '.next' ).addEventListener( 'click', function( e ) {
+                    e.preventDefault();
+
+                    myGallery.next();
+                });
+
+                document.querySelector( '.previous' ).addEventListener( 'click', function( e ) {
+                    e.preventDefault();
+
+                    myGallery.previous();
+                });
             })();
         </script>
     </body>
