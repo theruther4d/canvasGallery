@@ -10,15 +10,17 @@ class Gallery extends Emitter {
 
     /**
      * Constructor.
-     * @param { DOM node } el - the DOM node to gallerify
-     * @param { number } maxWidth - the max width of the Gallery.
-     * @param { number } maxHeight - the max height of the Gallery.
-     * @param { boolean } fluid - whether to resize the Gallery with the window width.
-     * @param { boolean } keyboard - whether to add keyboard support.
-     * @param { boolean } touch - whether to add touch support.
-     * @param { boolean } keyBoardTransitionDuration - the length of the transition when the left / right arrows are pressed.
+     * @param { object } options
+     * @param { DOM node } options.el - the DOM node to gallerify
+     * @param { number } options.maxWidth - the max width of the Gallery.
+     * @param { number } options.maxHeight - the max height of the Gallery.
+     * @param { boolean } options.fluid - whether to resize the Gallery with the window width.
+     * @param { boolean } options.keyboard - whether to add keyboard support.
+     * @param { boolean } options.touch - whether to add touch support.
+     * @param { boolean } options.keyBoardTransitionDuration - the length of the transition when the left / right arrows are pressed.
+     * @param { string } options.slideSelector - the child selector to use when building the gallery.
      */
-    constructor( { el, maxWidth, maxHeight = 800, fluid = true, keyboard = true, touch = true, keyBoardTransitionDuration = 500 } ) {
+    constructor( { el, maxWidth, maxHeight = 800, fluid = true, keyboard = true, touch = true, keyBoardTransitionDuration = 500, slideSelector = '.gallery__item' } ) {
         super();
         this._el = el;
         this._width = maxWidth || this._el.getBoundingClientRect().width;
@@ -37,6 +39,7 @@ class Gallery extends Emitter {
         this._direction = false;
         this._ticking = false;
         this._keyBoardTransitionDuration = keyBoardTransitionDuration;
+        this._slideSelector = slideSelector;
 
         this._getSlides( this._el, ( slides ) => {
             this._slideImages = slides;
@@ -70,7 +73,7 @@ class Gallery extends Emitter {
      */
     _getSlides( gallery, cb ) {
         let promises = [];
-        const slides = Array.from( gallery.querySelectorAll( '.gallery__item' ) );
+        const slides = Array.from( gallery.querySelectorAll( this._slideSelector ) );
 
         slides.forEach( ( slide, idx ) => {
             const src = slide.src;

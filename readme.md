@@ -18,6 +18,7 @@ myGallery = new Gallery({
 * `keyboard { boolean = true }` - Whether to add keyboard support.
 * `keyBoardTransitionDuration { number = 500 }` - The length of the transition when the left / right arrows are pressed.
 * `touch { boolean = true }` - Whether to add touch support.
+* `slideSelector { string = '.gallery__item' }` - QuerySelector to retreive slide items.
 
 ## API
 * `on( eventName, callback) { function }` - Attaches a callback to an event. The callback is passed an `event` object containing the following properties:

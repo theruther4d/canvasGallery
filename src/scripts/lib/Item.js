@@ -92,6 +92,7 @@ class Item extends Emitter {
     }
 
     _destroy() {
+        console.log( this );
         this._boundOnDraw = null;
         this._events = null;
         this.canvas = null;
@@ -110,9 +111,7 @@ class Item extends Emitter {
         this.leftOffset = null;
         this.slideHeight = null;
         this.slideWidth = null;
-        this.width = null;
-        this.xOffset = null;
-        this.yOffset = null;
+        this.width
     }
 };
 
