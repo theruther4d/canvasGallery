@@ -1,5 +1,5 @@
 # :milky_way: Canvas Gallery
-A gallery module inspired by iOS photos app's subtle parallax effect. See a demo on [codepen](http://codepen.io/the_ruther4d/full/JXLyrG/).
+A gallery module inspired by iOS photos app's subtle parallax effect. 33kb compressed. See a demo on [codepen](http://codepen.io/the_ruther4d/full/JXLyrG/).
 
 !['Canvas Gallery Demo'](https://github.com/theruther4d/canvasGallery/blob/master/cg.gif?raw=true)
 

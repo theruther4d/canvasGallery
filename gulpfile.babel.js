@@ -8,6 +8,7 @@ import browserify from 'browserify';
 import scss from 'gulp-sass';
 import prefix from 'gulp-autoprefixer';
 import cssMin from 'gulp-minify-css';
+import ugly from 'gulp-uglify';
 
 const SRC_DIR = './src';
 const OUTPUT_DIR = './dist/';
@@ -28,8 +29,9 @@ const compile = ( watch ) => {
             .on( 'error', ( err ) => {
                 console.log( `error: ${err }` );
             })
-            .pipe( source( 'index.js' ) )
+            .pipe( source( 'canvasGallery.min.js' ) )
             .pipe( buffer() )
+            .pipe( ugly() )
             .pipe( gulp.dest( OUTPUT_DIR ) );
     }
 
