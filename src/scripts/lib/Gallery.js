@@ -58,6 +58,7 @@ class Gallery extends Emitter {
            this._bindEvents();
            this._ready = true;
            this._draw();
+           this._setAria();
            this._slides[this.currentSlide]._onDraw( this.pos );
            this.trigger( 'ready', {
                numSlides: this._numSlides,
@@ -73,16 +74,15 @@ class Gallery extends Emitter {
      */
     _getSlides( gallery, cb ) {
         let promises = [];
-        const slides = Array.from( gallery.querySelectorAll( this._slideSelector ) );
+        this._rawSlides = Array.from( gallery.querySelectorAll( this._slideSelector ) );
 
-        slides.forEach( ( slide, idx ) => {
+        this._rawSlides.forEach( ( slide, idx ) => {
             const src = slide.src;
             const img = document.createElement( 'img' );
             let width, height;
 
             const promise = new Promise( ( resolve, reject ) => {
                 img.onload = () => {
-                    // resolve( new Item( this._ctx, img, idx, this._width, this._height, this._margin ) );
                     resolve( img );
                 };
 
@@ -295,9 +295,22 @@ class Gallery extends Emitter {
 
         this.currentSlide = slideNo;
         this._setCurrentPosition( duration );
+        this._setAria();
         this.trigger( 'update', {
             numSlides: this._numSlides,
             currentSlide: this.currentSlide
+        });
+    }
+
+
+    _setAria() {
+        this._rawSlides.forEach( ( slide, idx ) => {
+            if( this.currentSlide === idx ) {
+                slide.setAttribute( 'aria-hidden', false );
+                return;
+            }
+
+            slide.setAttribute( 'aria-hidden', true );
         });
     }
 
@@ -418,6 +431,7 @@ class Gallery extends Emitter {
         this.currentPosition = null;
         this.currentSlide = null;
         this.pos = null;
+        this._rawSlides = null;
     }
 };
 
