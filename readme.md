@@ -19,6 +19,7 @@ myGallery = new Gallery({
 * `keyBoardTransitionDuration { number = 500 }` - The length of the transition when the left / right arrows are pressed.
 * `touch { boolean = true }` - Whether to add touch support.
 * `slideSelector { string = '.gallery__item' }` - QuerySelector to retreive slide items.
+* `parallaxAmount { number = 0.25 }` - a number between 0 and 1 representing the amount of left/right parallax to be applied to the slide as it's moved across the canvas.
 
 ## API
 * `on( eventName, callback) { function }` - Attaches a callback to an event. The callback is passed an `event` object containing the following properties:

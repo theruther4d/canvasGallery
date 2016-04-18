@@ -38,7 +38,7 @@ class Item extends Emitter {
      * @param { number } dx - the difference between the current position and the Item center.
      */
     _parallax( dx ) {
-        const multiplier = Math.round( ( dx - this.xOffset ) * -0.25 );
+        const multiplier = Math.round( ( dx - this.xOffset ) * -1 * this.parallaxAmount );
         this.ctx.clearRect( 0, 0, this.width, this.height );
         this.ctx.drawImage( this.img, multiplier, 0, this.width, this.height );
     }
@@ -54,10 +54,12 @@ class Item extends Emitter {
      * @param { number } margin - the amount of margin between each slide.
      * @param { number } slideWidth - the scaled width of the slide.
      * @param { number } slideHeight - the scaled height of the slide.
+     * @param { number } parallaxAmount - a number between 0 and 1 representing the amount of left/right parallax to be applied to the slide as it's moved across the canvas.
      */
-    _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40, slideWidth, slideHeight ) {
+    _getProps( output, img, idx = 0, parentWidth = 400, parentHeight = 400, margin = 40, slideWidth, slideHeight, parallaxAmount ) {
         this.idx = idx;
         this.margin = margin;
+        this.parallaxAmount = parallaxAmount;
         this.refresh( slideWidth, slideHeight, parentWidth, parentHeight );
 
         this.output = output;
@@ -92,7 +94,6 @@ class Item extends Emitter {
     }
 
     _destroy() {
-        console.log( this );
         this._boundOnDraw = null;
         this._events = null;
         this.canvas = null;
@@ -111,7 +112,8 @@ class Item extends Emitter {
         this.leftOffset = null;
         this.slideHeight = null;
         this.slideWidth = null;
-        this.width
+        this.width = null;
+        this.parallaxAmount = null;
     }
 };
 

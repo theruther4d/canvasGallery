@@ -19,8 +19,9 @@ class Gallery extends Emitter {
      * @param { boolean } options.touch - whether to add touch support.
      * @param { boolean } options.keyBoardTransitionDuration - the length of the transition when the left / right arrows are pressed.
      * @param { string } options.slideSelector - the child selector to use when building the gallery.
+     * @param { number } options.parallaxAmount - a number between 0 and 1 representing the amount of left/right parallax to be applied to the slide as it's moved across the canvas.
      */
-    constructor( { el, maxWidth, maxHeight = 800, fluid = true, keyboard = true, touch = true, keyBoardTransitionDuration = 500, slideSelector = '.gallery__item' } ) {
+    constructor( { el, maxWidth, maxHeight = 800, fluid = true, keyboard = true, touch = true, keyBoardTransitionDuration = 500, slideSelector = '.gallery__item', parallaxAmount = 0.25 } ) {
         super();
         this._el = el;
         this._width = maxWidth || this._el.getBoundingClientRect().width;
@@ -40,6 +41,7 @@ class Gallery extends Emitter {
         this._ticking = false;
         this._keyBoardTransitionDuration = keyBoardTransitionDuration;
         this._slideSelector = slideSelector;
+        this._parallaxAmount = parallaxAmount;
 
         this._getSlides( this._el, ( slides ) => {
             this._slideImages = slides;
@@ -49,7 +51,7 @@ class Gallery extends Emitter {
             this._slides = [];
 
             slides.forEach( ( slide, idx ) => {
-                this._slides.push( new Item( this._ctx, slide, idx, this._width, this._height, this._margin, slideDimensions[idx].width, slideDimensions[idx].height ) );
+                this._slides.push( new Item( this._ctx, slide, idx, this._width, this._height, this._margin, slideDimensions[idx].width, slideDimensions[idx].height, this._parallaxAmount ) );
             });
 
            this.currentPosition = this._slides[this.currentSlide].leftOffset;
@@ -432,6 +434,7 @@ class Gallery extends Emitter {
         this.currentSlide = null;
         this.pos = null;
         this._rawSlides = null;
+        this._parallaxAmount = null;
     }
 };
 
